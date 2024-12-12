@@ -1,0 +1,13 @@
+debug/enterdata.o
+debug/enterdata.o
+debug/main.o
+debug/mainwindow.o
+debug/mainwindow.o
+debug/panel.o
+debug/panel.o
+debug/results.o
+debug/results.o
+debug/moc_enterdata.o
+debug/moc_mainwindow.o
+debug/moc_panel.o
+debug/moc_results.o
