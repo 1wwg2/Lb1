@@ -1,5 +1,6 @@
 #include "enterdata.h"
 #include <QQueue>
+
 EnterData::EnterData(QWidget* parent) : QWidget(parent)
 {
     SendInfo = new QPushButton("Start calculation", this);
@@ -234,17 +235,17 @@ void EnterData::MakeFailureRate()
     // QMap<QString, double> MapMakeFailureRate3;
     // QMap<QString, double> MapMakeFailureRate4;
     //λАВ λАЗ λПВ λПЗ λА  λП λКВ  λКЗ λК
-    QQueue<double> queue;
-    MapMakeFailureRate1["λАВ"] = FinalInputData["λМНАВ"] + FinalInputData["λПРАВ"] +
-        FinalInputData["λПМАВ"] + FinalInputData["λБЖАВ"];
+    QVector<double> vec;
+   /* MapMakeFailureRate1["λАВ"] =*/ vec.push_back(FinalInputData["λМНАВ"] + FinalInputData["λПРАВ"] +
+        FinalInputData["λПМАВ"] + FinalInputData["λБЖАВ"]);
+    MapMakeFailureRate1["λАВ"] = vec[0];
+    /*MapMakeFailureRate1["λАЗ"] = */ vec.push_back(MapMakeFailureRate1["λАВ"] * FinalInputData["β"]);
 
-    MapMakeFailureRate1["λАЗ"] =  MapMakeFailureRate1["λАВ"] * FinalInputData["β"];
+    /*MapMakeFailureRate1["λПВ"] =*/ MapMakeFailureRate1["λАВ"] * FinalInputData["α"];
 
-    MapMakeFailureRate1["λПВ"] = MapMakeFailureRate1["λАВ"] * FinalInputData["α"];
+    /*MapMakeFailureRate1["λПЗ"] =  */MapMakeFailureRate1["λПВ"] * FinalInputData["β"];
 
-    MapMakeFailureRate1["λПЗ"] =  MapMakeFailureRate1["λПВ"] * FinalInputData["β"];
-
-    MapMakeFailureRate1["λА"] = MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λАЗ"];
+    /*MapMakeFailureRate1["λА"] =*/ MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λАЗ"];
 
     MapMakeFailureRate1["λП"] = MapMakeFailureRate1["λПВ"] + MapMakeFailureRate1["λПЗ"];
 
