@@ -1,5 +1,5 @@
-#include "EnterData.h"
-
+#include "enterdata.h"
+#include <QQueue>
 EnterData::EnterData(QWidget* parent) : QWidget(parent)
 {
     SendInfo = new QPushButton("Start calculation", this);
@@ -8,12 +8,29 @@ EnterData::EnterData(QWidget* parent) : QWidget(parent)
     connect(SendInfo, &QPushButton::clicked, this, &EnterData::GetDataFromFields);
 }
 
-
-
 void EnterData::GetDataFromFields()
 {
-    for(int i = 0; i < 16; ++i)
-          inputs[i]->setText("1.5");
+    inputs[0]->setText("2.6");
+    inputs[1]->setText("1.6");
+    inputs[2]->setText("2.2");
+    inputs[3]->setText("0.9");
+    inputs[4]->setText("3");
+    inputs[5]->setText("8");
+    inputs[6]->setText("1.2");
+    inputs[7]->setText("1.8");
+    inputs[8]->setText("1.6");
+    inputs[9]->setText("1.4");
+    inputs[10]->setText("1.2");
+    inputs[11]->setText("1.4");
+    inputs[12]->setText("1.2");
+    inputs[13]->setText("0.7");
+    inputs[14]->setText("75");
+    inputs[15]->setText("1");
+
+
+
+
+
 
     for(int i = 0; i < 16; ++i)
     {
@@ -49,34 +66,8 @@ void EnterData::GetDataFromFields()
                                "γ", "∆t×10^3"};;
 0 1 2 3 5 6 10 13*/
 
-    QMap<QString, double> FinalInputData;
-    for(int i = 0; i < 16; ++i)
-    {
-        if(i == 10 && i == 12)
-        {
-            continue;
-        }
-        FinalInputData[headerNames[i]] = DataFromFields[i];
-    }
-
-        FinalInputData["λМНАВ"] = DataFromFields[0] * pow(10, -8);
-        FinalInputData["λПРАВ"] = DataFromFields[1] * pow(10, -8);
-        FinalInputData["λПМАВ"] = DataFromFields[2] * pow(10, -8);
-        FinalInputData["λБЖАВ"] = DataFromFields[3] * pow(10, -8);
-        FinalInputData["α"] = DataFromFields[4];
-        FinalInputData["β×10"] = DataFromFields[5] * 10;
-        FinalInputData["t×10^4"] = DataFromFields[6] * pow(10,4);
-        FinalInputData["κтем"] = DataFromFields[7];
-        FinalInputData["κвиб"] = DataFromFields[8];
-        FinalInputData["κпер"] = DataFromFields[9];
-        FinalInputData["G×10^2"] = DataFromFields[11] * pow(10,2);
-        FinalInputData["r"] = DataFromFields[13];
-        FinalInputData["γ"] = DataFromFields[14];
-        FinalInputData["∆t×10^3"] = DataFromFields[15] * 1000;
-
-        for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it) {
-            qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
-        }
+    MakeFinalData();
+    MakeFailureRate();
 
 }
 
@@ -93,7 +84,7 @@ void EnterData::BuildFields()
     VLayoutFirstGroup->addWidget(titleLabel1);
     for(int i = 0; i <= 3; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldFirst->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -108,7 +99,7 @@ void EnterData::BuildFields()
 
     for(int i = 4; i <= 6; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldSecond->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -127,7 +118,7 @@ void EnterData::BuildFields()
 
     for(int i = 7; i <= 9; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldThird->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -146,7 +137,7 @@ void EnterData::BuildFields()
 
     for(int i = 10; i <= 11; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldFour->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -168,7 +159,7 @@ void EnterData::BuildFields()
 
     for(int i = 12; i <= 13; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldFive->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -186,7 +177,7 @@ void EnterData::BuildFields()
 
     for(int i = 14; i <= 15; ++i)
     {
-        QLabel* label = new QLabel(headerNames.at(i), this);
+        QLabel* label = new QLabel(headerNamesGUI.at(i), this);
         label->setAlignment(Qt::AlignCenter);
         LayoutFieldSix->addWidget(label);
         inputs[i] = new QLineEdit(this);
@@ -212,51 +203,94 @@ void EnterData::BuildFields()
 
 
 
-void MakeFinalData()
+void EnterData::MakeFinalData()
+{
+
+    FinalInputData["λМНАВ"] = DataFromFields[0] * pow(10, -8);
+    FinalInputData["λПРАВ"] = DataFromFields[1] * pow(10, -8);
+    FinalInputData["λПМАВ"] = DataFromFields[2] * pow(10, -8);
+    FinalInputData["λБЖАВ"] = DataFromFields[3] * pow(10, -8);
+    FinalInputData["α"] = DataFromFields[4];
+    FinalInputData["β"] = DataFromFields[5] * 10;
+    FinalInputData["t"] = DataFromFields[6] * pow(10,4);
+    FinalInputData["κтем"] = DataFromFields[7];
+    FinalInputData["κвиб"] = DataFromFields[8];
+    FinalInputData["κпер"] = DataFromFields[9];
+    FinalInputData["G"] = DataFromFields[11] * pow(10,2);
+    FinalInputData["r"] = DataFromFields[13];
+    FinalInputData["γ"] = DataFromFields[14];
+    FinalInputData["∆t"] = DataFromFields[15] * 1000;
+
+    // for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it) {
+    //     qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
+    // }
+
+}
+
+void EnterData::MakeFailureRate()
+{
+    // QMap<QString, double> MapMakeFailureRate1;
+    // QMap<QString, double> MapMakeFailureRate2;
+    // QMap<QString, double> MapMakeFailureRate3;
+    // QMap<QString, double> MapMakeFailureRate4;
+    //λАВ λАЗ λПВ λПЗ λА  λП λКВ  λКЗ λК
+    QQueue<double> queue;
+    MapMakeFailureRate1["λАВ"] = FinalInputData["λМНАВ"] + FinalInputData["λПРАВ"] +
+        FinalInputData["λПМАВ"] + FinalInputData["λБЖАВ"];
+
+    MapMakeFailureRate1["λАЗ"] =  MapMakeFailureRate1["λАВ"] * FinalInputData["β"];
+
+    MapMakeFailureRate1["λПВ"] = MapMakeFailureRate1["λАВ"] * FinalInputData["α"];
+
+    MapMakeFailureRate1["λПЗ"] =  MapMakeFailureRate1["λПВ"] * FinalInputData["β"];
+
+    MapMakeFailureRate1["λА"] = MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λАЗ"];
+
+    MapMakeFailureRate1["λП"] = MapMakeFailureRate1["λПВ"] + MapMakeFailureRate1["λПЗ"];
+
+    MapMakeFailureRate1["λКВ"] = MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λПВ"];
+
+    MapMakeFailureRate1["λКЗ"] = MapMakeFailureRate1["λАЗ"] + MapMakeFailureRate1["λПЗ"];
+
+    MapMakeFailureRate1["λК"] = MapMakeFailureRate1["λА"] + MapMakeFailureRate1["λП"];
+
+
+    for (auto it = MapMakeFailureRate1.begin(); it != MapMakeFailureRate1.end(); ++it) {
+        //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
+        qDebug() << it.key() << ":" << (it.value());
+
+    }
+
+
+}
+void EnterData::AvgWorkinghFailure()
 {
 
 }
-void MakeFailureRate()
+void EnterData::WorkToFailure()
 {
 
 }
-void AvgWorkinghFailure()
+void EnterData::CalculateErrorFreeWork()
 {
 
 }
-void WorkToFailure()
+void EnterData::CalculateWorkErrorProb()
 {
 
 }
-void CalculateErrorFreeWork()
+
+void EnterData::CalculateFailureProbabilities()
 {
 
 }
-void CalculateWorkErrorProb()
+
+
+void EnterData::CalculateCyclicReliabilityProbabilities()
 {
 
 }
-void CalculateReliabilityStorage()
-{
-
-}
-void CalculateFailureProbabilities()
-{
-
-}
-void CalculateReliabilityStorage()
-{
-
-}
-void CalculateReliabilityStorage()
-{
-
-}
-void CalculateCyclicReliabilityProbabilities()
-{
-
-}
-void CalculateCyclicFailureProbabilities()
+void EnterData::CalculateCyclicFailureProbabilities()
 {
 
 }
