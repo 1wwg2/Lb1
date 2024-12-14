@@ -1,5 +1,5 @@
 #include "enterdata.h"
-#include <QQueue>
+#include <string>
 
 EnterData::EnterData(QWidget* parent) : QWidget(parent)
 {
@@ -27,11 +27,6 @@ void EnterData::GetDataFromFields()
     inputs[13]->setText("0.7");
     inputs[14]->setText("75");
     inputs[15]->setText("1");
-
-
-
-
-
 
     for(int i = 0; i < 16; ++i)
     {
@@ -69,6 +64,17 @@ void EnterData::GetDataFromFields()
 
     MakeFinalData();
     MakeFailureRate();
+    AvgWorkinghFailure();
+    WorkToFailure();
+    SetTimer();
+    CalculateErrorFreeWork();
+    CalculateWorkErrorProb();
+    CalculateFailureProbabilities();
+    CalculateFailureReliabilityStorage();
+    CalculateGeneralErrorFreeWork();
+    CalculateFailureGeneralWork();
+    CalculateCyclicReliabilityProbabilities();
+    CalculateCyclicFailureProbabilities();
 
 }
 
@@ -202,8 +208,6 @@ void EnterData::BuildFields()
     mainLayout->addLayout(VLayoutFirstGroup);
 }
 
-
-
 void EnterData::MakeFinalData()
 {
 
@@ -222,76 +226,285 @@ void EnterData::MakeFinalData()
     FinalInputData["γ"] = DataFromFields[14];
     FinalInputData["∆t"] = DataFromFields[15] * 1000;
 
-    // for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it) {
-    //     qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
-    // }
 
 }
 
 void EnterData::MakeFailureRate()
 {
-    // QMap<QString, double> MapMakeFailureRate1;
-    // QMap<QString, double> MapMakeFailureRate2;
-    // QMap<QString, double> MapMakeFailureRate3;
-    // QMap<QString, double> MapMakeFailureRate4;
-    //λАВ λАЗ λПВ λПЗ λА  λП λКВ  λКЗ λК
     QVector<double> vec;
-   /* MapMakeFailureRate1["λАВ"] =*/ vec.push_back(FinalInputData["λМНАВ"] + FinalInputData["λПРАВ"] +
-        FinalInputData["λПМАВ"] + FinalInputData["λБЖАВ"]);
-    MapMakeFailureRate1["λАВ"] = vec[0];
-    /*MapMakeFailureRate1["λАЗ"] = */ vec.push_back(MapMakeFailureRate1["λАВ"] * FinalInputData["β"]);
+    vec.push_back(FinalInputData["λМНАВ"] + FinalInputData["λПРАВ"] + FinalInputData["λПМАВ"] + FinalInputData["λБЖАВ"]);
+     MapMakeFailureRate1["λАВ"] = vec[0];
+    vec.push_back(MapMakeFailureRate1["λАВ"] * FinalInputData["β"]);
+     MapMakeFailureRate1["λАЗ"] = vec[1];
+    vec.push_back(MapMakeFailureRate1["λАВ"] * FinalInputData["α"]);
+    MapMakeFailureRate1["λПВ"] = vec[2];
+    vec.push_back(MapMakeFailureRate1["λПВ"] * FinalInputData["β"]);
+    MapMakeFailureRate1["λПЗ"] = vec[3];
+    vec.push_back(MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λАЗ"]);
+    MapMakeFailureRate1["λА"] = vec[4];
+    vec.push_back(MapMakeFailureRate1["λПВ"] + MapMakeFailureRate1["λПЗ"]);
+    MapMakeFailureRate1["λП"] = vec[5];
+    vec.push_back(MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λПВ"]);
+    MapMakeFailureRate1["λКВ"] = vec[6];
+    vec.push_back(MapMakeFailureRate1["λАЗ"] + MapMakeFailureRate1["λПЗ"]);
+    MapMakeFailureRate1["λКЗ"] = vec[7];
+    vec.push_back(MapMakeFailureRate1["λА"] + MapMakeFailureRate1["λП"]);
+    MapMakeFailureRate1["λК"] = vec[8];
 
-    /*MapMakeFailureRate1["λПВ"] =*/ MapMakeFailureRate1["λАВ"] * FinalInputData["α"];
+    MapMakeFailureRate2["λАВЗб"] = MapMakeFailureRate1["λАВ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λАЗЗб"] =  MapMakeFailureRate1["λАЗ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λПВЗб"] = MapMakeFailureRate1["λПВ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λПЗЗб"] = MapMakeFailureRate1["λПЗ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λАЗб"] = MapMakeFailureRate1["λА"] / FinalInputData["G"];
+    MapMakeFailureRate2["λПЗб"] = MapMakeFailureRate1["λП"] / FinalInputData["G"];
+    MapMakeFailureRate2["λКВЗб"] = MapMakeFailureRate1["λКВ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λКЗЗб"] =  MapMakeFailureRate1["λКЗ"] / FinalInputData["G"];
+    MapMakeFailureRate2["λКЗб"] = MapMakeFailureRate1["λК"] / FinalInputData["G"];
 
-    /*MapMakeFailureRate1["λПЗ"] =  */MapMakeFailureRate1["λПВ"] * FinalInputData["β"];
+    double TempMultFor3 = (FinalInputData["κтем"] * FinalInputData["κвиб"]) * FinalInputData["κпер"];
 
-    /*MapMakeFailureRate1["λА"] =*/ MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λАЗ"];
+    MapMakeFailureRate3["λАВЕ"] = TempMultFor3 * MapMakeFailureRate1["λАВ"];
+    MapMakeFailureRate3["λАЗЕ"] = TempMultFor3 *  MapMakeFailureRate1["λАЗ"];
+    MapMakeFailureRate3["λПВЕ"] = TempMultFor3 *  MapMakeFailureRate1["λПВ"];
+    MapMakeFailureRate3["λПЗЕ"] = TempMultFor3 * MapMakeFailureRate1["λПЗ"];
+    MapMakeFailureRate3["λАЕ"] = TempMultFor3 *  MapMakeFailureRate1["λА"];
+    MapMakeFailureRate3["λПЕ"] = TempMultFor3 * MapMakeFailureRate1["λП"];
+    MapMakeFailureRate3["λКВЕ"] = TempMultFor3 * MapMakeFailureRate1["λКВ"];
+    MapMakeFailureRate3["λКЗЕ"] = TempMultFor3 *   MapMakeFailureRate1["λКЗ"];
+    MapMakeFailureRate3["λКЕ"] =  TempMultFor3 * MapMakeFailureRate1["λК"];
 
-    MapMakeFailureRate1["λП"] = MapMakeFailureRate1["λПВ"] + MapMakeFailureRate1["λПЗ"];
+    double TempMultFor4 = (1.0 + (FinalInputData["G"] - 1.0) * FinalInputData["r"]) / FinalInputData["G"];
 
-    MapMakeFailureRate1["λКВ"] = MapMakeFailureRate1["λАВ"] + MapMakeFailureRate1["λПВ"];
-
-    MapMakeFailureRate1["λКЗ"] = MapMakeFailureRate1["λАЗ"] + MapMakeFailureRate1["λПЗ"];
-
-    MapMakeFailureRate1["λК"] = MapMakeFailureRate1["λА"] + MapMakeFailureRate1["λП"];
-
-
-    for (auto it = MapMakeFailureRate1.begin(); it != MapMakeFailureRate1.end(); ++it) {
-        //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
-        qDebug() << it.key() << ":" << (it.value());
-
-    }
-
+    MapMakeFailureRate4["λАВЦ"] = TempMultFor4 * MapMakeFailureRate1["λАВ"];
+    MapMakeFailureRate4["λАЗЦ"] = TempMultFor4 *  MapMakeFailureRate1["λАЗ"];
+    MapMakeFailureRate4["λПВЦ"] = TempMultFor4 *  MapMakeFailureRate1["λПВ"];
+    MapMakeFailureRate4["λПЗЦ"] = TempMultFor4 * MapMakeFailureRate1["λПЗ"];
+    MapMakeFailureRate4["λАЦ"] = TempMultFor4 *  MapMakeFailureRate1["λА"];
+    MapMakeFailureRate4["λПЦ"] = TempMultFor4 * MapMakeFailureRate1["λП"];
+    MapMakeFailureRate4["λКВЦ"] = TempMultFor4 * MapMakeFailureRate1["λКВ"];
+    MapMakeFailureRate4["λКЗЦ"] = TempMultFor4 *   MapMakeFailureRate1["λКЗ"];
+    MapMakeFailureRate4["λКЦ"] = TempMultFor4 * MapMakeFailureRate1["λК"];
 
 }
 void EnterData::AvgWorkinghFailure()
 {
 
+    for (auto it = MapMakeFailureRate1.begin(); it != MapMakeFailureRate1.end(); ++it)
+    {
+        MapAvgWorkinghFailure[0].insert(it.key(), 1.0 / it.value());
+    }
+    for (auto it = MapMakeFailureRate2.begin(); it != MapMakeFailureRate2.end(); ++it)
+    {
+        MapAvgWorkinghFailure[1].insert(it.key(), 1.0 / it.value());
+    }
+    for (auto it = MapMakeFailureRate3.begin(); it != MapMakeFailureRate3.end(); ++it)
+    {
+        MapAvgWorkinghFailure[2].insert(it.key(), 1.0 / it.value());
+    }
+    for (auto it = MapMakeFailureRate4.begin(); it != MapMakeFailureRate4.end(); ++it)
+    {
+        MapAvgWorkinghFailure[3].insert(it.key(), 1.0 / it.value());
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        QMap<QString, double> updatedMap;
+        for (auto it = MapAvgWorkinghFailure[i].begin(); it != MapAvgWorkinghFailure[i].end(); ++it)
+        {
+            QString updatedKey = it.key();
+            if (!updatedKey.isEmpty())
+            {
+                updatedKey[0] = 'T';
+            }
+            updatedMap.insert(updatedKey, it.value());
+        }
+        MapAvgWorkinghFailure[i] = updatedMap;
+    }
 }
+
 void EnterData::WorkToFailure()
 {
+    _worktofailure = (-1 / MapMakeFailureRate1["λКВ"]) * std::log(FinalInputData["γ"]/100);
+}
+
+void EnterData::SetTimer()
+{
+    for(int i = 0; i <= FinalInputData["t"]; i += 1000)
+    {
+        TIMER.push_back(i);
+    }
 
 }
+
 void EnterData::CalculateErrorFreeWork()
 {
+    QVector<QString> keys = {"PАВ", "PАЗ", "PПВ", "PПЗ", "PА", "PП", "PКВ", "PКЗ", "PК"};
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> pVector;
+        QString tempstr = keys[i];
+        double lambda =  MapMakeFailureRate1["λ" + tempstr.removeFirst()];
 
+        for(auto time : TIMER)
+        {
+            double pValue = std::exp(-lambda * time);
+            pVector.push_back(pValue);
+        }
+
+        ErrorFreeWork[keys[i]] = pVector;
+    }
 }
+
 void EnterData::CalculateWorkErrorProb()
 {
+    QVector<QString> keys = {"QАВ", "QАЗ", "QПВ", "QПЗ", "QА", "QП", "QКВ", "QКЗ", "QК"};
+
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> qVector;
+
+        QString tempstr = keys[i];
+        QVector<double> pVector = ErrorFreeWork["P" + tempstr.removeFirst()];
+        for(auto pValue : pVector)
+        {
+            pValue = 1.0 - pValue;
+            qVector.push_back(pValue);
+        }
+
+        ErrorProbabilities[keys[i]] = qVector;
+    }
+
 
 }
 
 void EnterData::CalculateFailureProbabilities()
 {
 
+    QVector<QString> keys = {"PАВЗб", "PАЗЗб", "PПВЗб", "PПЗЗб", "PАЗб", "PПЗб", "PКВЗб", "PКЗЗб", "PКЗб"};
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> pVector;
+        QString tempstr = keys[i];
+        double lambda =  MapMakeFailureRate2["λ" + tempstr.removeFirst()];
+
+        for(auto time : TIMER)
+        {
+            double pValue = std::exp(-lambda * time);
+            pVector.push_back(pValue);
+        }
+
+        ReliabilityStorage[keys[i]] = pVector;
+    }
+}
+
+void EnterData::CalculateFailureReliabilityStorage()
+{
+
+    QVector<QString> keys = {"QАВЗб", "QАЗЗб", "QПВЗб", "QПЗЗб", "QАЗб", "QПЗб", "QКВЗб", "QКЗЗб", "QКЗб"};;
+
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> qVector;
+
+        QString tempstr = keys[i];
+        QVector<double> pVector = ReliabilityStorage["P" + tempstr.removeFirst()];
+        for(auto pValue : pVector)
+        {
+            pValue = 1.0 - pValue;
+            qVector.push_back(pValue);
+        }
+
+        FailureReliabilityStorage[keys[i]] = qVector;
+    }
+
+
+}
+
+void EnterData::CalculateGeneralErrorFreeWork()
+{
+    QVector<QString> keys = {"PАВЕ", "PАЗЕ", "PПВЕ", "PПЗЕ", "PАЕ", "PПЕ", "PКВЕ", "PКЗЕ", "PКЕ"};
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> pVector;
+        QString tempstr = keys[i];
+        double lambda =  MapMakeFailureRate3["λ" + tempstr.removeFirst()];
+
+        for(auto time : TIMER)
+        {
+            double pValue = std::exp(-lambda * time);
+            pVector.push_back(pValue);
+        }
+
+        GeneralErrorFreeWork[keys[i]] = pVector;
+    }
+
 }
 
 
+void EnterData::CalculateFailureGeneralWork()
+{
+
+    QVector<QString> keys = {"QАВЕ", "QАЗЕ", "QПВЕ", "QПЗЕ", "QАЕ", "QПЕ", "QКВЕ", "QКЗЕ", "QКЕ"};
+
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> qVector;
+
+        QString tempstr = keys[i];
+        QVector<double> pVector = GeneralErrorFreeWork["P" + tempstr.removeFirst()];
+        for(auto pValue : pVector)
+        {
+            pValue = 1.0 - pValue;
+            qVector.push_back(pValue);
+        }
+
+        FailureGeneralWork[keys[i]] = qVector;
+    }
+
+}
 void EnterData::CalculateCyclicReliabilityProbabilities()
 {
+
+    QVector<QString> keys = {"PАВЦ", "PАЗЦ", "PПВЦ", "PПЗЦ", "PАЦ", "PПЦ", "PКВЦ", "PКЗЦ", "PКЦ"};
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> pVector;
+        QString tempstr = keys[i];
+        double lambda =  MapMakeFailureRate4["λ" + tempstr.removeFirst()];
+
+        for(auto time : TIMER)
+        {
+            double pValue = std::exp(-lambda * time);
+            pVector.push_back(pValue);
+        }
+
+        CyclicReliabilityProbabilities[keys[i]] = pVector;
+    }
+
 
 }
 void EnterData::CalculateCyclicFailureProbabilities()
 {
 
+    QVector<QString> keys = {"QАВЦ", "QАЗЦ", "QПВЦ", "QПЗЦ", "QАЦ", "QПЦ", "QКВЦ", "QКЗЦ", "QКЦ"};
+
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        QVector<double> qVector;
+
+        QString tempstr = keys[i];
+        QVector<double> pVector = CyclicReliabilityProbabilities["P" + tempstr.removeFirst()];
+        for(auto pValue : pVector)
+        {
+            pValue = 1.0 - pValue;
+            qVector.push_back(pValue);
+        }
+
+        CyclicFailureProbabilities[keys[i]] = qVector;
+    }
+    for (auto it = CyclicFailureProbabilities.begin(); it != CyclicFailureProbabilities.end(); ++it)
+    {
+        //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
+        qDebug() << it.key() << ":" << (it.value());
+    }
 }
