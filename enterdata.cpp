@@ -1,5 +1,4 @@
 #include "enterdata.h"
-#include <string>
 
 EnterData::EnterData(QWidget* parent) : QWidget(parent)
 {
@@ -75,6 +74,7 @@ void EnterData::GetDataFromFields()
     CalculateFailureGeneralWork();
     CalculateCyclicReliabilityProbabilities();
     CalculateCyclicFailureProbabilities();
+
 
 }
 
@@ -226,6 +226,23 @@ void EnterData::MakeFinalData()
     FinalInputData["γ"] = DataFromFields[14];
     FinalInputData["∆t"] = DataFromFields[15] * 1000;
 
+    QFile file("Ta.txt");
+
+    // Открываем файл для записи
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Ошибка при открытии файла!";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Записываем данные в файл
+    for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it) {
+        out << it.key() << ": \t\t\t" << QString::number(it.value(), 'f', 10) << "\n";
+    }
+
+    // Закрываем файл
+    file.close();
 
 }
 
@@ -502,9 +519,9 @@ void EnterData::CalculateCyclicFailureProbabilities()
 
         CyclicFailureProbabilities[keys[i]] = qVector;
     }
-    for (auto it = CyclicFailureProbabilities.begin(); it != CyclicFailureProbabilities.end(); ++it)
-    {
-        //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
-        qDebug() << it.key() << ":" << (it.value());
-    }
+    // for (auto it = CyclicFailureProbabilities.begin(); it != CyclicFailureProbabilities.end(); ++it)
+    // {
+    //     //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
+    //     qDebug() << it.key() << ":" << (it.value());
+    // }
 }

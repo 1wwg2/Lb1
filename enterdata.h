@@ -9,6 +9,9 @@
 #include <QMap>
 #include <QString>
 #include <cmath>
+#include <QFile>
+#include <QTextStream>
+
 class EnterData : public QWidget
 {
     Q_OBJECT

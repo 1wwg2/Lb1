@@ -2,15 +2,24 @@
 #define RESULTS_H
 
 #include <QWidget>
-#include <QLabel>
+#include <QComboBox>
+#include <QTextEdit>
 
 class Results : public QWidget
 {
     Q_OBJECT
-private:
-    QLabel* label = nullptr;
+
 public:
-    Results(QWidget* parent = nullptr);
+    explicit Results(QWidget* parent = nullptr);
+
+private slots:
+    void onSelectionChanged(int index);
+
+private:
+    QComboBox* comboBox;
+    QTextEdit* textEdit;
+
+    void loadTableFromFile(const QString& fileName);
 };
 
 #endif // RESULTS_H
