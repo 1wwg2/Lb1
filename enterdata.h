@@ -16,6 +16,7 @@ class EnterData : public QWidget
 {
     Q_OBJECT
 private:
+    QString PATH = "/home/vitaliy/Cpp/Lb1/Results";
     QPushButton* SendInfo = nullptr;
     QLabel* titleLabels[6];
     QLabel* headers[16];

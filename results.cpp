@@ -24,18 +24,29 @@ private:
 
 Results::Results(QWidget* parent) : QWidget(parent)
 {
-    // Создаем виджеты
     comboBox = new QComboBox(this);
     textEdit = new QTextEdit(this);
 
-    // Добавляем элементы в выпадающий список
-    comboBox->addItem("Таблица 1");
-    comboBox->addItem("Таблица 2");
+    comboBox->addItem("Початкова таблиця остаточних результатів");
+    comboBox->addItem("Інтенсивність відмов і збоїв");
+    comboBox->addItem("Середні напрацювання до відмови і збою ");
+    comboBox->addItem("Напрацювання до відмови");
+    comboBox->addItem("Ймовірності безпомилкової, безвідмовної і беззбійної роботи і ПК");
+    comboBox->addItem("Ймовірності помилкової роботи ");
+    comboBox->addItem("Ймовірності безвідмовного зберігання");
+    comboBox->addItem("Ймовірності відмови при зберіганні");
+    comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК в цілому з урахуванням умов експлуатації ");
+    comboBox->addItem("Ймовірності помилкової роботи в цілому з урахуванням умов експлуатації");
+    comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК при циклічному функціонуванні  ");
+    comboBox->addItem("Ймовірності помилкової роботи при циклічному функціонуванні");
 
-    // Подключаем слот на изменение выбора
+
     connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSelectionChanged(int)));
+    if(comboBox->currentIndex() == 0)
+    {
+        loadTableFromFile("/home/vitaliy/Cpp/Lb1/Results/Початкова таблиця остаточних результатів.txt");
+    }
 
-    // Располагаем элементы в вертикальном лейауте
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->addWidget(comboBox);
     layout->addWidget(textEdit);
@@ -44,11 +55,14 @@ Results::Results(QWidget* parent) : QWidget(parent)
 
 void Results::onSelectionChanged(int index)
 {
+    QString PATH = "/home/vitaliy/Cpp/Lb1/Results/";
     QString fileName;
-    if (index == 0) {
-        fileName = "/home/vitaliy/Cpp/Lb1/build/Desktop_Qt_6_7_3-Debug/Ta.txt";  // Замените на путь к файлу для первой таблицы
-    } else if (index == 1) {
-        fileName = "table2.txt";  // Замените на путь ко второй таблице
+    for(int i = 0; i < 16; ++i)
+    {
+        if(index == i)
+        {
+            fileName = PATH + comboBox->itemText(i) + ".txt";
+        }
     }
 
     loadTableFromFile(fileName);
@@ -60,7 +74,7 @@ void Results::loadTableFromFile(const QString& fileName)
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         textEdit->clear();
-        textEdit->setText(in.readAll());  // Загружаем содержимое файла в QTextEdit
+        textEdit->setText(in.readAll());
         file.close();
     } else {
         textEdit->setText("Не удалось открыть файл.");

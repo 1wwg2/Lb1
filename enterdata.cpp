@@ -29,15 +29,14 @@ void EnterData::GetDataFromFields()
 
     for(int i = 0; i < 16; ++i)
     {
+        if(inputs[i]->text().isEmpty())
+        {
 
-        //if(inputs[i]->text().isEmpty())
-        //{
-          //
-            //QMessageBox::critical(this, "Error", "Please, write all number in field");
-            //break;
-      //  }
-        //else
-      //  {
+            QMessageBox::critical(this, "Error", "Please, write all number in field");
+            break;
+        }
+        else
+        {
             bool IsDouble = true;
             double value = inputs[i]->text().toDouble(&IsDouble);
             if (!IsDouble)
@@ -49,17 +48,8 @@ void EnterData::GetDataFromFields()
             {
                 DataFromFields[i] = inputs[i]->text().toDouble();
             }
-        //}
+        }
     }
-
-
-    /*        QStringList headerNames = {"λМНАВ", "λПРАВ", "λПМАВ", "λБЖАВ",
-                               "α", "β×10", "t×10^4",
-                               "κтем", "κвиб", "κпер",
-                               "t×10^4", "G×10^2",
-                               "t×10^4", "r",
-                               "γ", "∆t×10^3"};;
-0 1 2 3 5 6 10 13*/
 
     MakeFinalData();
     MakeFailureRate();
@@ -226,22 +216,21 @@ void EnterData::MakeFinalData()
     FinalInputData["γ"] = DataFromFields[14];
     FinalInputData["∆t"] = DataFromFields[15] * 1000;
 
-    QFile file("Ta.txt");
+    QFile file(PATH + "/Початкова таблиця остаточних результатів.txt");
 
-    // Открываем файл для записи
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
         qWarning() << "Ошибка при открытии файла!";
         return;
     }
 
     QTextStream out(&file);
 
-    // Записываем данные в файл
-    for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it) {
+    for (auto it = FinalInputData.begin(); it != FinalInputData.end(); ++it)
+    {
         out << it.key() << ": \t\t\t" << QString::number(it.value(), 'f', 10) << "\n";
     }
 
-    // Закрываем файл
     file.close();
 
 }
@@ -302,7 +291,42 @@ void EnterData::MakeFailureRate()
     MapMakeFailureRate4["λКЗЦ"] = TempMultFor4 *   MapMakeFailureRate1["λКЗ"];
     MapMakeFailureRate4["λКЦ"] = TempMultFor4 * MapMakeFailureRate1["λК"];
 
+    QFile file(PATH + "/Інтенсивність відмов і збоїв.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    for (auto it1 = MapMakeFailureRate1.begin(), it2 = MapMakeFailureRate2.begin(), it3 = MapMakeFailureRate3.begin(), it4 = MapMakeFailureRate4.begin();
+         it1 != MapMakeFailureRate1.end();
+         ++it1, ++it2, ++it3, ++it4)
+    {
+        out << it1.key() << "= " << it1.value() << "\t "
+             << it2.key() << "= " << it2.value() << "\t "
+                 << it3.key() << "= " << it3.value() << "\t "
+                     << it4.key() << "= " << it4.value() << "\t\n";
+    }
+
+    out.flush();
+    file.close();
+
 }
+
+
+// comboBox->addItem("Середні напрацювання до відмови і збою ");
+// comboBox->addItem("Напрацювання до відмови");
+// comboBox->addItem("Ймовірності безпомилкової, безвідмовної і беззбійної роботи і ПК");
+// comboBox->addItem("Ймовірності помилкової роботи ");
+// comboBox->addItem("Ймовірності безвідмовного зберігання");
+// comboBox->addItem("Ймовірності відмови при зберіганні");
+// comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК в цілому з урахуванням умов експлуатації ");
+// comboBox->addItem("Ймовірності помилкової роботи в цілому з урахуванням умов експлуатації");
+// comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК при циклічному функціонуванні  ");
+// comboBox->addItem("Ймовірності помилкової роботи при циклічному функціонуванні");
+
 void EnterData::AvgWorkinghFailure()
 {
 
