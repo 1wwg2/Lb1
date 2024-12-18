@@ -316,16 +316,8 @@ void EnterData::MakeFailureRate()
 }
 
 
-// comboBox->addItem("Середні напрацювання до відмови і збою ");
-// comboBox->addItem("Напрацювання до відмови");
-// comboBox->addItem("Ймовірності безпомилкової, безвідмовної і беззбійної роботи і ПК");
-// comboBox->addItem("Ймовірності помилкової роботи ");
-// comboBox->addItem("Ймовірності безвідмовного зберігання");
-// comboBox->addItem("Ймовірності відмови при зберіганні");
-// comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК в цілому з урахуванням умов експлуатації ");
-// comboBox->addItem("Ймовірності помилкової роботи в цілому з урахуванням умов експлуатації");
-// comboBox->addItem("Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК при циклічному функціонуванні  ");
-// comboBox->addItem("Ймовірності помилкової роботи при циклічному функціонуванні");
+
+
 
 void EnterData::AvgWorkinghFailure()
 {
@@ -361,11 +353,48 @@ void EnterData::AvgWorkinghFailure()
         }
         MapAvgWorkinghFailure[i] = updatedMap;
     }
+
+    QFile file(PATH + "/Середні напрацювання до відмови і збою.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    int keyWidth = 10;
+    int valueWidth = 20;
+
+    for (auto it1 = MapAvgWorkinghFailure[0].begin(), it2 = MapAvgWorkinghFailure[1].begin(),
+         it3 = MapAvgWorkinghFailure[2].begin(), it4 = MapAvgWorkinghFailure[3].begin();
+         it1 != MapAvgWorkinghFailure[0].end();
+         ++it1, ++it2, ++it3, ++it4)
+    {
+        out << it1.key() << "= " << QString::number(it1.value(), 'f', 10) << "\t "
+            << it2.key() << "= " << it2.value() << "\t "
+            << it3.key() << "= " << it3.value() << "\t "
+            << it4.key() << "= " << it4.value() << "\t\n";
+    }
+
+    out.flush();
+    file.close();
 }
 
 void EnterData::WorkToFailure()
 {
     _worktofailure = (-1 / MapMakeFailureRate1["λКВ"]) * std::log(FinalInputData["γ"]/100);
+    QFile file(PATH + "/Напрацювання до відмови.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+    QTextStream out(&file);
+    out << "γ = " <<  QString::number(_worktofailure, 'f', 10);
+    out.flush();
+    file.close();
+
 }
 
 void EnterData::SetTimer()
@@ -374,11 +403,12 @@ void EnterData::SetTimer()
     {
         TIMER.push_back(i);
     }
-
 }
 
 void EnterData::CalculateErrorFreeWork()
 {
+
+    // comboBox->addItem(");
     QVector<QString> keys = {"PАВ", "PАЗ", "PПВ", "PПЗ", "PА", "PП", "PКВ", "PКЗ", "PК"};
     for(int i = 0; i < keys.size(); ++i)
     {
@@ -394,10 +424,44 @@ void EnterData::CalculateErrorFreeWork()
 
         ErrorFreeWork[keys[i]] = pVector;
     }
+
+    QFile file(PATH + "/Ймовірності безпомилкової, безвідмовної і беззбійної роботи і ПК.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = ErrorFreeWork.begin(); it != ErrorFreeWork.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << pVector[j];
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
+
 }
 
 void EnterData::CalculateWorkErrorProb()
 {
+
+
+    // comboBox->addItem(" ");
     QVector<QString> keys = {"QАВ", "QАЗ", "QПВ", "QПЗ", "QА", "QП", "QКВ", "QКЗ", "QК"};
 
     for(int i = 0; i < keys.size(); ++i)
@@ -415,6 +479,35 @@ void EnterData::CalculateWorkErrorProb()
         ErrorProbabilities[keys[i]] = qVector;
     }
 
+    QFile file(PATH + "/Ймовірності помилкової роботи.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = ErrorProbabilities.begin(); it != ErrorProbabilities.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 
 }
 
@@ -436,7 +529,39 @@ void EnterData::CalculateFailureProbabilities()
 
         ReliabilityStorage[keys[i]] = pVector;
     }
+    QFile file(PATH + "/Ймовірності безвідмовного зберігання.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = ReliabilityStorage.begin(); it != ReliabilityStorage.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 }
+
+
+
 
 void EnterData::CalculateFailureReliabilityStorage()
 {
@@ -458,6 +583,35 @@ void EnterData::CalculateFailureReliabilityStorage()
         FailureReliabilityStorage[keys[i]] = qVector;
     }
 
+    QFile file(PATH + "/Ймовірності відмови при зберіганні.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = FailureReliabilityStorage.begin(); it != FailureReliabilityStorage.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 
 }
 
@@ -478,6 +632,36 @@ void EnterData::CalculateGeneralErrorFreeWork()
 
         GeneralErrorFreeWork[keys[i]] = pVector;
     }
+
+    QFile file(PATH + "/Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК в цілому з урахуванням умов експлуатації.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = GeneralErrorFreeWork.begin(); it != GeneralErrorFreeWork.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 
 }
 
@@ -501,6 +685,35 @@ void EnterData::CalculateFailureGeneralWork()
 
         FailureGeneralWork[keys[i]] = qVector;
     }
+    QFile file(PATH + "/Ймовірності помилкової роботи в цілому з урахуванням умов експлуатації.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = FailureGeneralWork.begin(); it != FailureGeneralWork.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 
 }
 void EnterData::CalculateCyclicReliabilityProbabilities()
@@ -522,6 +735,35 @@ void EnterData::CalculateCyclicReliabilityProbabilities()
         CyclicReliabilityProbabilities[keys[i]] = pVector;
     }
 
+    QFile file(PATH + "/Ймовірності безвідмовної роботи і відмови апаратних засобів і ПК при циклічному функціонуванні.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = CyclicReliabilityProbabilities.begin(); it != CyclicReliabilityProbabilities.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 
 }
 void EnterData::CalculateCyclicFailureProbabilities()
@@ -543,9 +785,34 @@ void EnterData::CalculateCyclicFailureProbabilities()
 
         CyclicFailureProbabilities[keys[i]] = qVector;
     }
-    // for (auto it = CyclicFailureProbabilities.begin(); it != CyclicFailureProbabilities.end(); ++it)
-    // {
-    //     //qDebug() << it.key() << ":" << QString::number(it.value(), 'f', 10);
-    //     qDebug() << it.key() << ":" << (it.value());
-    // }
+
+    QFile file(PATH + "/Ймовірності помилкової роботи при циклічному функціонуванні.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error: Unable to open file for writing!";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "t=\t ";
+    for(auto& el : TIMER)
+    {
+        out << el << "\t";
+    }
+    out << "\n";
+
+    for (auto it = CyclicFailureProbabilities.begin(); it != CyclicFailureProbabilities.end(); ++it)
+    {
+        out << it.key() << "=\t ";
+        const QVector<double>& pVector = it.value();
+        for (int j = 0; j < pVector.size(); ++j)
+        {
+            out << QString("%1").arg(pVector[j], 0, 'f', 7);
+            if (j < pVector.size() - 1)
+                out << "\t ";
+        }
+        out << "\n\n";
+    }
+    out.flush();
+    file.close();
 }
