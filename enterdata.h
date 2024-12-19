@@ -11,6 +11,7 @@
 #include <cmath>
 #include <QFile>
 #include <QTextStream>
+#include <QDir>
 
 class EnterData : public QWidget
 {

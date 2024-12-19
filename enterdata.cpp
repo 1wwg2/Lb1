@@ -29,27 +29,27 @@ void EnterData::GetDataFromFields()
 
     for(int i = 0; i < 16; ++i)
     {
-        if(inputs[i]->text().isEmpty())
-        {
+        QString inputText = inputs[i]->text().trimmed();
 
-            QMessageBox::critical(this, "Error", "Please, write all number in field");
-            break;
-        }
-        else
+        if (inputText.isEmpty())
         {
-            bool IsDouble = true;
-            double value = inputs[i]->text().toDouble(&IsDouble);
-            if (!IsDouble)
-            {
-                QMessageBox::critical(this, "Error", "Please, write all double in field");
-                break;
-            }
-            else
-            {
-                DataFromFields[i] = inputs[i]->text().toDouble();
-            }
+            QMessageBox::critical(this, "Error", "Please, fill in all fields.");
+            return;
         }
+
+        bool conversionSuccess = false;
+        double value = inputText.toDouble(&conversionSuccess);
+
+        if (!conversionSuccess)
+        {
+            QMessageBox::critical(this, "Error", "Please, enter valid numbers in all fields.");
+            return;
+        }
+
+        DataFromFields[i] = value;
     }
+     QMessageBox::information(this, "OK", "GOOD! Start calulate!");
+
 
     MakeFinalData();
     MakeFailureRate();
@@ -64,6 +64,7 @@ void EnterData::GetDataFromFields()
     CalculateFailureGeneralWork();
     CalculateCyclicReliabilityProbabilities();
     CalculateCyclicFailureProbabilities();
+
 
 
 }
@@ -312,7 +313,6 @@ void EnterData::MakeFailureRate()
 
     out.flush();
     file.close();
-
 }
 
 
@@ -362,9 +362,6 @@ void EnterData::AvgWorkinghFailure()
     }
 
     QTextStream out(&file);
-
-    int keyWidth = 10;
-    int valueWidth = 20;
 
     for (auto it1 = MapAvgWorkinghFailure[0].begin(), it2 = MapAvgWorkinghFailure[1].begin(),
          it3 = MapAvgWorkinghFailure[2].begin(), it4 = MapAvgWorkinghFailure[3].begin();
